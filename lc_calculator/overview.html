@@ -1,0 +1,23 @@
+<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>An LC Ladder Filter Calculator: Overview</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>An LC Ladder Filter Calculator: Overview</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"></span><span class="navigation-up"><a href="/index.html">^ Up</a></span><span class="navigation-next"></span></div><p>There's a kind of electronic circuit know as a filter, whose purpose
+is to allow only certain frequencies through. If you've ever used an
+old-school graphic equalizer on a sound system, or even bass and
+treble knobs, you've been adjusting a filter circuit.</p><p>There are approximately a gazillion (plus minus a bazillion)
+different kinds of filter circuits, but I'm particularly interested in
+a specific kind of filter, known as an LC Ladder filter, for some of
+the radio projects I'm noodling around with (None of them have come far
+enough to be worth putting up on this site yet).</p><p>The calculations involved in designing such a filter circuit are
+onerous enough that I don't want to do them by hand, but they really
+aren't all that much for a computer to do. There's a variety of online
+calculators for them out there, but none of them
+is <em>exactly</em> what I want.</p><p>As I said, there isn't all that much arithmetic involved, for a
+computer, but there are a bunch of parameters to twiddle. All of this
+makes an in-browser calculator a nice fit for the problem. Because
+it's in the browser, that makes the language choice simple:
+JavaScript.</p><p>A raw JavaScript application, however, can drive you crazy. It's
+pretty easy to do simple things, but as you start adding features, you
+quickly hit a threshold where the code has a tendency to become
+overwhelming. And you generally hit that threshold without much warning.</p><p>To deal with the complexity problem, people have been creating
+application frameworks for in-browser JavaScript for some time. Of the
+current crop of frameworks, I prefer React.</p><p>So, that's the short-form description of the project: An in-browser
+calculator, written in JavaScript/React, for designing LC ladder
+filters.</p><div id="bottom-navigation"><span class="navigation-prev"></span><span class="navigation-up"><a href="/index.html">^ Up</a></span><span class="navigation-next"></span></div></div></body></html>

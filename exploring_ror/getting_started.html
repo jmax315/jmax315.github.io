@@ -1,0 +1,85 @@
+<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>Exploring Ruby on Rails Projects With Metaprogramming: Getting Started</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>Exploring Ruby on Rails Projects With Metaprogramming: Getting Started</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"><a href="overview.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="better_monkey_patching.html">Next &gt;</a></span></div><h2>Where To Start</h2><p>The first thing to decide when creating a project is what to name
+it. I'm going to stay fairly pedestrian and non-clever here, and after
+a quick check with Google to try and avoid duplicating names with
+another project, just name it "ruby-explorer". (I really wanted to
+use "t-rex", with the justification that it stands for "The Ruby
+Explorer". Sadly, that name is already taken by multiple projects.)</p><p>So, naming taken care of, I've created a <a href="https://github.com/jmax315/ruby-explorer">Github repository for the project</a>.</p><p>All good software starts the same way: bite off a manageable chunk
+and make it work. I find that it's best to have that chunk be a
+working application, however rudimentary. Starting with a working app
+helps avoid painting yourself into a corner with an unworkable
+design. You'll find out fast if you're headed that way, while the cost
+to correct it is lowest. In the interest of keeping things simple for
+the first pass, it'll be a command-line app.</p><p>For starters, let's say that I want to know all of the files loaded by
+a Rails project. This should be a fairly straightforward exercise,
+with plenty of room to add extra functionality once that's up and
+running.</p><p>A bit of terminology here: when I want to talk about the code we're
+exploring, I'll use the adjective "target". So I might talk about the
+"target application", or "target code", for example.</p><h3>A Spike</h3><p>There's a bit of exploration to do here before I start on the app
+itself; the problem at hand is the basic question of how to intercept
+calls to Ruby's core methods. The terminology I like for this sort of
+exploration is taken from Extreme Programming (XP), and is "spike". A
+spike is just a bit of exploratory code. It is not production code,
+nor is it ever intended to be. Its sole purpose is to learn something.</p><p>To begin with the smallest piece, I'll tackle the simple problem of
+noting every time that the target code calls <code>require</code>. I
+won't worry about calls to <code>require_relative</code>
+or <code>load</code>; if I can handle <code>require</code> in the spike, then I'm confident I can handle all
+three in the production code.</p><p>For target code, we'll use a simple "hello, world" program with one <code>require</code> at the top:</p><pre><code>require 'socket' # Arbitrary module; not actually used
+
+puts "In the subject app"
+</code></pre><p>Only slightly more code is needed to spy on the target:</p><pre><code>module Kernel
+  alias_method :original_require, :require
+
+  def require(name)
+    puts "doing require(#{name})"
+    return_value= original_require(name)
+    puts "require(#{name}) returned #{return_value}"
+    return_value
+  end
+end
+</code></pre><p>There's some subtle stuff going on here, though. First, we're opening up the <code>Kernel</code> module, one of the foundations of Ruby. The
+ability to re-open and "monkey-patch" an existing module or class is
+one of the things that makes sophisticated metaprogramming
+possible. Next, we use <code>alias-method</code> to create a new
+name for <code>require</code>. It is important to distinguish between
+the code for a method and the name of the method. After
+the <code>alias_method</code>, we have two names for the same
+code. The same code will be invoked if we call <code>require</code>
+or <code>original_require</code>.</p><p>Next, we define <code>require</code> in the usual way. This creates
+a new chunk of code and names it <code>Kernel::require</code>. The
+original code for <code>require</code> is still there, and we can
+get to it via the name <code>original_require</code>, even though the
+name <code>require</code> is now attached to our new block of code.</p><p>After managing this trick, the rest is straightforward; we tell the
+user that we're about to call require, actually do the call to the
+original require method, making sure to remember what it returned, and
+tell the user about the return value. Then we actually return the
+value.</p><p>The code for the initial spike is checked in under the directory
+"spikes/wrap-require".</p><p>We can use Ruby's -r option to force it to load our inspection code
+before the target app, so that we can get our hooks
+into <code>require</code> before the target can call it. When we try
+all this out, it looks like:</p><pre><code class="shell">jmax@deepthought $ ruby -r ./wrap_require.rb subject_app.rb
+doing require(socket)
+doing require(socket.so)
+require(socket.so) returned true
+doing require(io/wait)
+require(io/wait) returned true
+require(socket) returned true
+In the subject app
+jmax@deepthought $
+</code></pre><p>And we've already uncovered something interesting. The target's
+call <code>require 'socket'</code> does two requires of its own,
+for <code>socket.so</code> and <code>io/wait</code>. The second
+require isn't particularly odd; it's just loading up another chunk of
+code that it wants to use. The first one, though, is loading up
+a <em>binary</em> file; a shared library, probably written in
+C. This is a peek into the guts of a Ruby extension; if there's
+non-Ruby code involved, it gets packaged as a shared library, and the
+.so then gets loaded with <code>require</code>, just as a Ruby file
+would be.</p><p>All this is almost completely transparent to the target code; the
+only things affected are:</p><ul><li>There is some extra output to <code>$stdout.</code></li><li><code>require</code> will take slightly more time, because our code gets executed in addition to the original code.</li><li>There's a new name, <code>original_require</code> in the <code>Kernel</code> module.</li></ul><p>The first thing is simply an artifact of this being a spike; we're
+investigating how to wrap an existing method, and haven't made any
+effort to leave $stdout untouched. In production code, we'll have to
+avoid polluting the target's output.</p><p>The second somewhat unavoidable. By the very nature
+of metaprogramming, we're going to be executing some extra code; all
+we can do is keep the overhead as low as possible. We'll deal with the third item, not polluting the target code's name space, next.
+</p><p>So, summarizing what we've learned from our spike, there are four points:</p><ul><li>We can wrap existing methods.</li><li>Don't touch target's output</li><li>Minimize the amount of code injected</li></ul><p>I'll record these items in the project's Github wiki on a <a href="https://github.com/jmax315/ruby-explorer/wiki/Notes">Notes</a> page, so I don't forget them. As I address them, and as I discover
+new things, I'll update that page.</p><div id="bottom-navigation"><span class="navigation-prev"><a href="overview.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="better_monkey_patching.html">Next &gt;</a></span></div></div></body></html>

@@ -1,0 +1,91 @@
+<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>Background: How I Discovered Computers</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>Background: How I Discovered Computers</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"></span><span class="navigation-up"><a href="/index.html">^ Up</a></span><span class="navigation-next"></span></div><p>I started out playing with electronics when I was a teenager.
+Popular Electronics was my favorite magazine in the whole world. They
+were the folks who ran the article about the machine that started it
+all - the Altair 8800. I knew absolutely nothing about computers at
+the time. But they were <em>cool.</em> They looked all high-tech,
+with all the blinking lights and everything.  And people I idolized,
+like NASA engineers, used them!</p><p>It was pretty mind-boggling that my county's school system actually
+had a computer for students to use - if they took the right classes,
+of course. That was a computer shared by all the high schools in the
+county, mind, not a computer per school. And there I was, seeing my
+favorite magazine talking about a <em>personal</em> computer. I read that article with lust in my heart. Just
+imagine: a computer of your very own!</p><p>The Altair was completely out of my reach, though. I was operating on
+a junior high school kid's budget, and a minimal Altair system
+would've set you back about $1000. That would've bought you a system
+with perhaps 4k of memory, a cassette recorder for mass storage, and a
+front panel full of switches and lights to program it. Things got even
+more expensive quickly if you wanted luxuries like, say, a keyboard or
+a video display.</p><p>It was all totally out of the question on a teenager's budget. There
+were other computers floating around shortly after that, but they were
+all competition for the Altair, with similar price tags. I could only
+dream.</p><h2>Building my first computer</h2><p>Then a miracle happened: Popular Electronics published a construction
+article about a computer I could actually afford. The <a href="http://www.cosmacelf.com/">Cosmac Elf</a> was even more restricted than the
+Altair; it only had 256 bytes (yup, 1/4k) of memory, for example. But
+it was only about $100 of parts; less if you scrounged a little.</p><p>And so I scraped together enough money for it.</p><p>Interestingly, the most expensive single components were a pair of
+single-digit hexadecimal LED displays, not the microprocessor or
+memory chips. That was my introduction to one of the basic principles
+of computers: the peripherals are always the most expensive part.</p><p>Because I was trying to keep things as cheap as possible, I didn't use
+those hexadecimal displays. I used an alternative binary display (8
+LEDs) described in the article. The hex digit displays would've set me
+back about $30 for the pair; the binary display option cost about $10,
+as I recall.</p><h2>Learning to program</h2><p>So, after wiring it all up and double-checking my work, the moment of
+truth arrived: I turned it on, while praying as hard as I ever had
+that nothing would produce smoke.</p><p>And the stupid thing just <em>sat there.</em> Turned out that it
+wasn't going to do anything until I learned to program it. The
+construction article had a sidebar that was an introduction to
+machine-language programming, and I devoured it.</p><p>After playing with the example programs, I set out to write my very
+first original program: a 'bouncing ball' display on those 8
+front-panel LEDs. Light up the leftmost LED, then turn it off and
+light up the next one, until I got to the rightmost one, then start
+back to the left, going back and forth across the display so that it
+looked like a moving light.</p><p>I got done toggling in my first try (loading programs one byte at a
+time with toggle switches gets old really fast, by the way), and
+flipped the run switch. All eight LEDs lit up, dimly.</p><p>Now came my introduction to debugging. After using the basic debugging
+technique known as "staring at the code and thinking", I realized my
+mistake. Even that little computer was so fast that my eyes couldn't
+keep up; it was actually working just fine, but the ball of light was
+bouncing so fast that it all blurred together. A little calculation
+told me that it was going back and forth a few thousand times per
+second. Fortunately, the little article sidebar had a section on something
+called "delay loops". After I played around with that idea for a bit,
+I got my bouncing ball to bounce properly.</p><p>And I was hooked.</p><h2>Learning to program, phase II</h2><p>After more user-friendly machines came along, I negotiated an
+agreement with the owner of my local Radio Shack. I got to hang out in
+the store and play with his display model TRS-80, in exchange for
+making myself scarce when paying customers were around, and for
+sometimes helping him make sales ("Hey, if a kid can use it, surely
+you can..."). Having a keyboard and video display, and an actual
+high-level language was _wonderful_, and I learned a lot from that
+little beast.</p><p>When I went to college, I had to decide between the two subjects that
+interested me enough to consider majoring in: physics and computer
+science. I decided to major in physics, on the grounds that I had
+never found anything having to do with computers that I couldn't
+eventually figure out, but it was very handy to have people to ask
+stupid physics questions of.</p><p>But that didn't mean giving up my computer addiction. Using the
+university's computers meant signing up for classes, though; they were
+very stuffy about that. So I ended up with four computer classes on my
+transcript; two introductory courses that I took purely to get onto
+the school's computers, and two graduate school courses ("Principles
+of AI" and "Compiler Architecture") that I wheedled my way into
+because they were actually interesting and taught me things I didn't
+know.</p><p>College was also my introduction to Unix (specifically BSD 4.2 and
+4.3), and I still prefer that environment to any other. I use Linux
+these days, but it's the same world for most purposes.</p><h2>Linux!</h2><p>After finishing a bachelor's degree, I decided that a career in
+academia was not for me, so I was faced with the necessity of earning
+a living. By happy accident, people were willing to pay me to program
+computers.</p><p>In the early 90s, I was working professionally mostly on IBM PCs
+running MS-DOS, but my personal machine, my pride and joy, was an
+Amiga 1000. First microcomputer to have a dedicated graphics
+accelerator, and a very nice GUI, all shoehorned into 512k of
+RAM. Windows (version 2 at the time), by contrast, was more a
+proof-of-concept than a useful environment. Macs were nice, but the
+Amiga was better.</p><p>Then another miracle happened. Some guy from Finland released his toy
+Unix clone, with a warning that it was just a hobby project that
+probably would never amount to anything much. I bought my first
+PC-compatible to run it, and have never looked back; I retired my
+Amiga as soon as someone ported the X Window System. Linux rocks
+beyond words.</p><p>Since then I've worked on desktop applications, embedded systems,
+mainframes (a bit), back-end web apps, and front-end web apps. It's
+all fun.</p><p>These days, I'm running a decently fast machine and Gentoo Linux. I
+don't recommend Gentoo unless you're crazy in much the same way that I
+am (Gentoo builds everything from source code on your machine), but
+it's great if you are.</p><div id="bottom-navigation"><span class="navigation-prev"></span><span class="navigation-up"><a href="/index.html">^ Up</a></span><span class="navigation-next"></span></div></div></body></html>
