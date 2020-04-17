@@ -5,8 +5,10 @@ There are enough hooks in Ruby that we could scan existing method
 names and pick a unique one, but that wouldn't protect us from that
 name being taken by someone else <em>later.</em></p><p>Second, with we're tied to Kernel. This isn't an immediate problem,
 because we're only wrapping <code>Kernel::require</code>, but our
-approach doesn't scale well, if we ever want to wrap a method in some
-other module or class.</p><h3>Spike</h3><p>So let's see if we can do better. It turns out that Ruby provides
+approach doesn't scale well. If we ever want to wrap a method in some
+other module or class, we'll need to open up that module or method as
+well. Our current approach gives us no good way to do that on the fly,
+either; we'd have to modify the wrapping code.</p><h3>Spike</h3><p>So let's see if we can do better. It turns out that Ruby provides
 enough hooks that we can.</p><pre><code>def wrap(klass, method_id)
   original_method= klass.method(method_id)
   klass.define_method(method_id) do |*args|
@@ -26,7 +28,8 @@ call <code>method</code> on the passed-in class to grab a copy of
 the method we're going to wrap.  Then it
 calls <code>define_method</code> to create our wrapped version. The
 block passed in to <code>define-method</code> becomes the code for
-our wrapper.</p><p>Finally, we use our new method to wrap Kernel#require.</p><p>Using the same target app as our first spike, when we run the new version of our wrapping code, we get the same result:</p><pre><code class="shell">jmax@deepthought $ ruby -r './wrap_require.rb' target_app.rb
+our wrapper.</p><p>Finally, we use our new method to wrap Kernel#require.</p><p>Using the same target app as our first spike, when we run the
+new version of our wrapping code, we get the same result:</p><pre><code class="shell">jmax@deepthought $ ruby -r './wrap_require.rb' target_app.rb
 doing require(socket)
 doing require(socket.so)
 orignal require returned true
@@ -39,4 +42,4 @@ jmax@deepthought $
 and <code>define_method</code>, instead
 of <code>alias_method</code>, we aren't adding any new method
 definitions to the target class, and we also can pass any class we
-like in to <code>wrap</code>.</p><p>The code for this spike is in the <a href="https://github.com/jmax315/ruby-explorer">git repo</a>, under "spikes/dynamic_wrap_require".</p><div id="bottom-navigation"><span class="navigation-prev"><a href="getting_started.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="creating_the_app.html">Next &gt;</a></span></div></div></body></html>
+like in to <code>wrap</code>.</p><p>The code for this spike is in the <a href="https://github.com/jmax315/ruby-explorer">git repo</a>, under <code>spikes/dynamic_wrap_require</code>.</p><div id="bottom-navigation"><span class="navigation-prev"><a href="getting_started.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="creating_the_app.html">Next &gt;</a></span></div></div></body></html>

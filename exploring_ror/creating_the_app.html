@@ -58,10 +58,11 @@ Resolving dependencies...
   create   .rspec
   create   spec/spec_helper.rb
 jmax@deepthought $
-</code></pre><h3>The CLI</h3><p>As an architecture for applications in general, it's best to have the
-top-level CLI wrapper just handle the command line arguments and options,
-create and configure an application object, then pass off control to
-it.</p><p>So, the first test is simply that the CLI creates an application object.
+</code></pre><h3>The CLI</h3><p>As an architecture for command-line applications in general, it's
+best to have the top-level CLI wrapper (the program that the user will
+actually invoke) just handle the command line arguments and options,
+then create and configure an application object and pass off control
+to it.</p><p>So, the first test is simply that the CLI creates an application object.
 I'm going to go through this first test in rather excruciating
 detail; I'll speed up the presentation after that, I promise.</p><pre><code>describe "The CLI" do
   before do
@@ -203,7 +204,7 @@ their values through to the application object.</p><p>If we do decide to eventua
 then it would be best to use something like the <code>thor</code> gem, which handles most of the boilerplate for such things. The
 other plausible paths that we might take are to create a GUI, or a web
 front end.  Right now, there's no need to get too fancy, and whatever
-we do later, having most of the logic outside of the actual CLI should
+we do later, having most of the logic outside of the actual CLI will
 help keep things decoupled enough to make upgrading the user interface
 fairly straightforward.</p><p>The test code for the CLI was actually the most complicated part:</p><pre><code>require './src/ruby_explorer'
 

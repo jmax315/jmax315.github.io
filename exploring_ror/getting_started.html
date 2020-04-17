@@ -52,8 +52,7 @@ name <code>require</code> is now attached to our new block of code.</p><p>After 
 user that we're about to call require, actually do the call to the
 original require method, making sure to remember what it returned, and
 tell the user about the return value. Then we actually return the
-value.</p><p>The code for the initial spike is checked in under the directory
-"spikes/wrap-require".</p><p>We can use Ruby's -r option to force it to load our inspection code
+value.</p><p>The code for the initial spike is checked in under the directory <code>spikes/wrap-require.</code></p><p>We can use Ruby's -r option to force it to load our inspection code
 before the target app, so that we can get our hooks
 into <code>require</code> before the target can call it. When we try
 all this out, it looks like:</p><pre><code class="shell">jmax@deepthought $ ruby -r ./wrap_require.rb subject_app.rb
@@ -80,6 +79,5 @@ investigating how to wrap an existing method, and haven't made any
 effort to leave $stdout untouched. In production code, we'll have to
 avoid polluting the target's output.</p><p>The second somewhat unavoidable. By the very nature
 of metaprogramming, we're going to be executing some extra code; all
-we can do is keep the overhead as low as possible. We'll deal with the third item, not polluting the target code's name space, next.
-</p><p>So, summarizing what we've learned from our spike, there are four points:</p><ul><li>We can wrap existing methods.</li><li>Don't touch target's output</li><li>Minimize the amount of code injected</li></ul><p>I'll record these items in the project's Github wiki on a <a href="https://github.com/jmax315/ruby-explorer/wiki/Notes">Notes</a> page, so I don't forget them. As I address them, and as I discover
+we can do is keep the overhead as low as possible.</p><p>We'll deal with the third item, not polluting the target code's name space, next.</p><p>Summarizing what we've learned from our spike, there are four points:</p><ul><li>We can wrap existing methods.</li><li>Don't touch target's output</li><li>Minimize the amount of code injected</li></ul><p>I'll record these items in the project's Github wiki on a <a href="https://github.com/jmax315/ruby-explorer/wiki/Notes">Notes</a> page, so I don't forget them. As I address them, and as I discover
 new things, I'll update that page.</p><div id="bottom-navigation"><span class="navigation-prev"><a href="overview.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="better_monkey_patching.html">Next &gt;</a></span></div></div></body></html>
