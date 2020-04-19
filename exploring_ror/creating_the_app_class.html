@@ -1,0 +1,611 @@
+<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>Exploring Ruby on Rails Projects With Metaprogramming: Creating the App Object</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>Exploring Ruby on Rails Projects With Metaprogramming: Creating the App Object</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Updates</div><div id="page-set" /><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app_class.html">Creating the App Object</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_probe.html">Creating the Probe</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"><a href="creating_the_app.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="creating_the_probe.html">Next &gt;</a></span></div><h2>The Application Class</h2><p>We had to create the skeleton of an application
+object, <code>RubyExplorer</code>, in order to have something to
+attach the CLI to. Now it's time to put some flesh on that skeleton's
+bones.</p><p>So, what does the application object have to do? It needs to:</p><ul><li>Insert the code to monkey-patch <code>require</code> into the target Rails app</li><li>Start the target Rails app</li><li>Display the output from our version of <code>require</code></li></ul><p>In addition, when we start the target Rails app, we need to respect
+the app's (possible) use of rvm, and its (likely) use of bundler.</p><p>Another bit of terminology again: In hardware development, one uses
+a probe from a test instrument (e.g., an voltmeter) to connect to the
+circuit under development and look at what's going on. By analogy, I'm
+going to refer to the code inserted into the target Rails app as
+the <em>probe</em>.</p><p>We can insert our probe into the target application in the same way
+that our spikes did, using Ruby's <code>-r</code> option. Respecting
+bundler should happen automatically, as long as we don't do anything
+to mess that up.  Respecting rvm is slightly trickier.</p><p>Rvm and similar packages work their magic by hooks in bash that are
+installed when the user logs in. We can fake a login shell by using
+bash's <code>-l</code> option, but that leaves us with a quandary: We
+want to load up the application using <code>ruby -r</code>, but at
+the same time we want to use <code>bash -l</code> to make sure we
+let rvm insert itself. Fortunately, bash also provides an option that
+gets us out of the dillema:<code>-c</code>.</p><p>When run with <code>-c</code>, bash doesn't read commands from the
+user, as it normally would. Instead, it expects a single command to be
+provided as a command line argument.  It starts up, runs the specified
+command, and then exits. Putting all of this together (and ignoring,
+for the moment, the issue of what directory our probe code is in
+versus what directory the target app is in; we'll deal with that in a
+bit) we can accomplish what we want if we start up the app like:</p><pre><code>bash -l -c 'ruby -r probe.rb bin/rails'</code></pre><p>So let's write our first test for <code>RubyApplication</code>:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><p>And the code to make it pass is:</p><pre><code>require 'pathname'
+
+class RubyExplorer
+  attr_accessor :target_directory
+
+  def run
+    bin_directory= Pathname.new($0).dirname
+    src_directory= File.expand_path("#{bin_directory}/../src")
+    Dir.chdir(target_directory)
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+  end
+end
+</code></pre><p>As I mentioned, we've entirely neglected the issue of directories
+for ruby-explorer and the target app here. In addition, although we've
+got a unit test in place to ensure that we're doing what we want to,
+but we don't have any assurance that it all works. To get that
+confidence, we have to actually run the application.</p><p>To run the application, we need a Rails app to be our
+target. Eventually, we want to run this on a "legacy" app - one
+that's already been written to do something. After all, that's
+ultimately the point. For now, though, all we want is to ensure that
+we start the target app, so we can just create a new rails app and use
+that for our target app.</p><pre><code class="lang-shell">jmax@deepthought $ rvm use 2.5.5@bare-rails --create
+ruby-2.5.5 - #gemset created /home/jmax/.rvm/gems/ruby-2.5.5@bare-rails
+ruby-2.5.5 - #generating bare-rails wrappers.........
+Using /home/jmax/.rvm/gems/ruby-2.5.5 with gemset bare-rails
+jmax@deepthought $ rails new bare-rails
+      create
+      create  README.md
+      create  Rakefile
+      create  .ruby-version
+   :
+   :
+jmax@deepthought $ cd bare-rails/
+jmax@deepthought $ echo &gt;.ruby-version ruby-2.5.5
+jmax@deepthought $ echo &gt;.gemset-version bare-rails
+jmax@deepthought $ bundle install
+Fetching gem metadata from https://rubygems.org/............
+Fetching rake 13.0.1
+Installing rake 13.0.1
+   :
+   :
+jmax@deepthought $ bin/rails server
+=&gt; Booting Puma
+=&gt; Rails 6.0.2.2 application starting in development
+=&gt; Run `rails server --help` for more startup options
+Puma starting in single mode...
+* Version 4.3.3 (ruby 2.5.5-p157), codename: Mysterious Traveller
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://127.0.0.1:3000
+* Listening on tcp://[::1]:3000
+Use Ctrl-C to stop
+Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2020-04-17 18:54:36 -0400 ===
+- Goodbye!
+Exiting
+jmax@deepthought $
+</code></pre><p>So now we have a target app. When we try running with ruby-explorer,
+it fails, of course.</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
+bash: bin/ruby-explorer: Permission denied
+jmax@deepthought $
+</code></pre><p>Wups! Our CLI doesn't have execute permission. This is simple enough
+to fix; we flip the execution permission bit on the CLI and try
+again.</p><pre><code class="lang-shell">jmax@deepthought $ chmod 744 bin/ruby-explorer
+jmax@deepthought $ bin/ruby-explorer ../bare-rails
+jmax@deepthought $ Traceback (most recent call last):
+ruby: No such file or directory -- bin/rails (LoadError)
+
+jmax@deepthought $
+</code></pre><p>And it fails in a much more reasonable fashion. We're looking
+for <code>bin/rails</code> under the root directory of
+ruby-explorer, and of course it isn't there; it's in the target app's
+directory.</p><p>To fix this, we have to change to the target app's directory. We
+already know what that directory is; our CLI stashed it in <code>RubyExplorer#target_directory</code>. Time for another test:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><p>And the code to make it pass is:</p><pre><code>require 'pathname'
+
+class RubyExplorer
+  attr_accessor :target_directory
+
+  def run
+    bin_directory= Pathname.new($0).dirname
+    src_directory= File.expand_path("#{bin_directory}/../src")
+    Dir.chdir(target_directory)
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+  end
+end
+</code></pre><p>Running it, we fail again.</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
+jmax@deepthought $ Traceback (most recent call last):
+    1: from /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/rubygems/core_ext/kernel_require.rb:54:in `require'
+/home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/rubygems/core_ext/kernel_require.rb:54:in `require': cannot load such file -- probe (LoadError)
+
+jmax@deepthought $
+</code></pre><p>This time, we failed because Ruby can't find our probe. We've got
+several problems here. First, we haven't even created a probe. Second,
+when we do, it'll be back in ruby-explorer's directory. Third, back
+when we set up the test for ruby-explorer's call
+to <code>spawn</code>, we forgot to include the .rb extension on the
+probe.</p><p>Fixing these problems in the test, we get:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><p>And then we change the code so the test passes.</p><pre><code>require 'pathname'
+
+class RubyExplorer
+  attr_accessor :target_directory
+
+  def run
+    bin_directory= Pathname.new($0).dirname
+    src_directory= File.expand_path("#{bin_directory}/../src")
+    Dir.chdir(target_directory)
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+  end
+end
+</code></pre><p>Let's add a dummy Probe class, so we have something to load:</p><pre><code>class Probe
+end
+
+puts "Hello from the probe!"
+</code></pre><p>And we're ready to try again:</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
+jmax@deepthought $
+The most common rails commands are:
+ generate     Generate new code (short-cut alias: "g")
+ console      Start the Rails console (short-cut alias: "c")
+ server       Start the Rails server (short-cut alias: "s")
+ test         Run tests except system tests (short-cut alias: "t")
+ test:system  Run system tests
+ dbconsole    Start a console for the database specified in config/database.yml
+              (short-cut alias: "db")
+
+ new          Create a new Rails application. "rails new my_app" creates a
+              new application called MyApp in "./my_app"
+
+
+All commands can be run with -h (or --help) for more information.
+In addition to those commands, there are:
+
+  about
+  action_mailbox:ingress:exim
+  action_mailbox:ingress:postfix
+   :
+   :
+jmax@deepthought $
+</code></pre><p>So close. The only reason we failed this time is that we didn't tell
+rails to start a server; in fact we didn't tell it to do anything.
+Fixing the test and code again:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><pre><code>require 'pathname'
+
+class RubyExplorer
+  attr_accessor :target_directory
+
+  def run
+    bin_directory= Pathname.new($0).dirname
+    src_directory= File.expand_path("#{bin_directory}/../src")
+    Dir.chdir(target_directory)
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+  end
+end
+</code></pre><p>Crossing our fingers, we try running it again:</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
+jmax@deepthought $ =&gt; Booting Puma
+=&gt; Rails 6.0.2.2 application starting in development
+=&gt; Run `rails server --help` for more startup options
+Puma starting in single mode...
+* Version 4.3.3 (ruby 2.5.5-p157), codename: Mysterious Traveller
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://127.0.0.1:3000
+* Listening on tcp://[::1]:3000
+Use Ctrl-C to stop
+</code></pre><p>Success!</p><p>After dancing in joy for a bit, we realize that we still have an
+empty probe. We really aren't doing anything more than running Rails
+in an unusual fashion. In fact, we don't even have any feedback to
+tell us our probe is getting loaded. We'll tackle putting some real
+guts into the probe shortly, but first lets just print something from
+inside the probe.</p><pre><code>class Probe
+end
+
+puts "Hello from the probe!"
+</code></pre><p>Running it again, we see our message:</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
+jmax@deepthought $ Hello from the probe!
+=&gt; Booting Puma
+=&gt; Rails 6.0.2.2 application starting in development
+=&gt; Run `rails server --help` for more startup options
+Puma starting in single mode...
+* Version 4.3.3 (ruby 2.5.5-p157), codename: Mysterious Traveller
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://127.0.0.1:3000
+* Listening on tcp://[::1]:3000
+Use Ctrl-C to stop
+
+jmax@deepthought $
+</code></pre><p>Before we start work on the probe in the next section, let's clean
+up the tests a bit. We should always keep our code, which includes the
+code for tests, as clean as possible.  There's actually not much to
+criticize in the RubyExplorer class, but we've got a little bit of a
+smell in our tests for it:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><p>We're actually testing three different things at once.</p><ul><li>First, we test that we change to the correct (i.e. the target) directory</li><li>Second we test that we spawn the Rails app correctly</li><li>Finally, we also test that we do things in the correct order; that
+is, we must change to the target directory before trying
+to start up the target app.</li></ul><p>The first two are checked by having <code>.with</code> clauses on
+the <code>expect</code> statements, which check the arguments
+passed.  The third thing is checked by the <code>.ordered</code>
+clauses, which check that the calls happen in the same order as
+the <code>expect</code> statements.</p><p>It's also a little annoying that we have two separate
+expectations in our test; ideally, each test should check for one and
+only one thing, so that if it fails, we can easily determine what's
+wrong.</p><p>At this point, things are not awful, but it's best to clean them
+up <em>now</em>, before they get any worse. So, splitting our
+existing test into three tests, we get:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><p>Looking at that, we've still got one more problem with our app
+class. We're assuming that the current directory is the root of the
+ruby-explorer project, which won't generally be true. So lets' modify
+the tests to remove that assumption. This is actually slightly
+tricky.</p><p>At first glance, we might try picking the directory for the <code>ruby-explorer</code> binary off of <code>$0</code>. This
+won't work, though, because at the time when we need the directory
+for <code>probe.rb</code>, we won't be in our original location; we
+will have changed directories to the target project.</p><p>Or, rather, it won't <em>always</em> work. It will work if
+the original command to run ruby-explorer used an absolute path, for
+example: <code>/home/jmax/ruby-explorer/bin/ruby-explorer</code>. This
+gives our way to resolve the problem: before we change to the target
+project's directory, we need to get the directory part
+of <code>$0</code> and convert it to an absolute path. So the test
+ends up like:</p><pre><code>require './src/ruby_explorer'
+
+describe "RubyExplorer#run" do
+  let(:app) { RubyExplorer.new }
+
+  let(:target_directory) {"../target-directory"}
+  let(:bin_directory) {"../ruby-explorer/bin"}
+  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
+  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
+  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+
+  before do
+    allow(Dir).to receive(:chdir)
+    allow(Process).to receive(:spawn)
+    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+
+    $0= cli_binary_path
+    app.target_directory= target_directory
+    app.run
+  end
+
+  it "finds the absolute path of the src directory" do
+    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
+  end
+
+  it "changes to the the target directory" do
+    expect(Dir).to have_received(:chdir).with(target_directory)
+  end
+
+  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+  it "changes directories before trying to spawn" do
+=======
+  it "picks off the src directory, changes directories, and spawns, in that order" do
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
+    expect(File).to have_received(:expand_path).ordered
+    expect(Dir).to have_received(:chdir).ordered
+    expect(Process).to have_received(:spawn).ordered
+  end
+end
+</code></pre><p>And the code changes to:</p><pre><code>require 'pathname'
+
+class RubyExplorer
+  attr_accessor :target_directory
+
+  def run
+    bin_directory= Pathname.new($0).dirname
+    src_directory= File.expand_path("#{bin_directory}/../src")
+    Dir.chdir(target_directory)
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+  end
+end
+</code></pre><p>Trying all this out, we cd up a level and run <code>ruby-explorer</code>:</p><pre><code class="lang-shell">jmax@deepthought $ cd ..
+jmax@deepthought $ ruby-explorer/bin/ruby-explorer bare-rails
+jmax@deepthought $ Hello from the probe!
+=&gt; Booting Puma
+=&gt; Rails 6.0.2.2 application starting in development
+=&gt; Run `rails server --help` for more startup options
+Puma starting in single mode...
+* Version 4.3.3 (ruby 2.5.5-p157), codename: Mysterious Traveller
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://127.0.0.1:3000
+* Listening on tcp://[::1]:3000
+Use Ctrl-C to stop
+</code></pre><p>On to the probe!</p><div id="bottom-navigation"><span class="navigation-prev"><a href="creating_the_app.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="creating_the_probe.html">Next &gt;</a></span></div></div></body></html>
