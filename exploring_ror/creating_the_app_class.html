@@ -26,61 +26,24 @@ bit) we can accomplish what we want if we start up the app like:</p><pre><code>b
 describe "RubyExplorer#run" do
   let(:app) { RubyExplorer.new }
 
-  let(:target_directory) {"../target-directory"}
-  let(:bin_directory) {"../ruby-explorer/bin"}
-  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
-  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
-  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
-
   before do
-    allow(Dir).to receive(:chdir)
     allow(Process).to receive(:spawn)
-    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
-
-    $0= cli_binary_path
-    app.target_directory= target_directory
     app.run
   end
 
-  it "finds the absolute path of the src directory" do
-    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
-  end
+  it "spawns the probe inserter" do
+    expect(Process).to have_received(:spawn).with("/bin/bash",
+                                                  "-l",
+                                                  "-c",
+                                                  "ruby -r probe bin/rails")
 
-  it "changes to the the target directory" do
-    expect(Dir).to have_received(:chdir).with(target_directory)
-  end
-
-  it "spawns the target app" do
-    expected_ruby_command=
-      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
-
-    expect(Process).to have_received(:spawn).
-                         with("/bin/bash",
-                              "-l",
-                              "-c",
-                              expected_ruby_command)
-  end
-
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-  it "changes directories before trying to spawn" do
-=======
-  it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
-    expect(File).to have_received(:expand_path).ordered
-    expect(Dir).to have_received(:chdir).ordered
-    expect(Process).to have_received(:spawn).ordered
   end
 end
-</code></pre><p>And the code to make it pass is:</p><pre><code>require 'pathname'
-
-class RubyExplorer
+</code></pre><p>And the code to make it pass is:</p><pre><code>class RubyExplorer
   attr_accessor :target_directory
 
   def run
-    bin_directory= Pathname.new($0).dirname
-    src_directory= File.expand_path("#{bin_directory}/../src")
-    Dir.chdir(target_directory)
-    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r probe bin/rails")
   end
 end
 </code></pre><p>As I mentioned, we've entirely neglected the issue of directories
@@ -148,62 +111,30 @@ already know what that directory is; our CLI stashed it in <code>RubyExplorer#ta
 
 describe "RubyExplorer#run" do
   let(:app) { RubyExplorer.new }
-
-  let(:target_directory) {"../target-directory"}
-  let(:bin_directory) {"../ruby-explorer/bin"}
-  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
-  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
-  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+  let(:target_directory) {"target_directory"}
 
   before do
     allow(Dir).to receive(:chdir)
     allow(Process).to receive(:spawn)
-    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
 
-    $0= cli_binary_path
     app.target_directory= target_directory
     app.run
   end
 
-  it "finds the absolute path of the src directory" do
-    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
-  end
-
-  it "changes to the the target directory" do
-    expect(Dir).to have_received(:chdir).with(target_directory)
-  end
-
   it "spawns the target app" do
-    expected_ruby_command=
-      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
-
-    expect(Process).to have_received(:spawn).
-                         with("/bin/bash",
-                              "-l",
-                              "-c",
-                              expected_ruby_command)
-  end
-
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-  it "changes directories before trying to spawn" do
-=======
-  it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
-    expect(File).to have_received(:expand_path).ordered
-    expect(Dir).to have_received(:chdir).ordered
-    expect(Process).to have_received(:spawn).ordered
+    expect(Dir).to have_received(:chdir).with(target_directory).ordered
+    expect(Process).to have_received(:spawn).with("/bin/bash",
+                                                  "-l",
+                                                  "-c",
+                                                  "ruby -r probe bin/rails").ordered
   end
 end
-</code></pre><p>And the code to make it pass is:</p><pre><code>require 'pathname'
-
-class RubyExplorer
+</code></pre><p>And the code to make it pass is:</p><pre><code>class RubyExplorer
   attr_accessor :target_directory
 
   def run
-    bin_directory= Pathname.new($0).dirname
-    src_directory= File.expand_path("#{bin_directory}/../src")
     Dir.chdir(target_directory)
-    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r probe bin/rails")
   end
 end
 </code></pre><p>Running it, we fail again.</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
@@ -221,68 +152,37 @@ probe.</p><p>Fixing these problems in the test, we get:</p><pre><code>require '.
 
 describe "RubyExplorer#run" do
   let(:app) { RubyExplorer.new }
-
-  let(:target_directory) {"../target-directory"}
-  let(:bin_directory) {"../ruby-explorer/bin"}
-  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
-  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
-  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+  let(:target_directory) {"target_directory"}
+  let(:original_directory) {"original-directory"}
 
   before do
     allow(Dir).to receive(:chdir)
     allow(Process).to receive(:spawn)
-    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+    allow(Dir).to receive(:getwd).and_return(original_directory)
 
-    $0= cli_binary_path
     app.target_directory= target_directory
     app.run
   end
 
-  it "finds the absolute path of the src directory" do
-    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
-  end
-
-  it "changes to the the target directory" do
-    expect(Dir).to have_received(:chdir).with(target_directory)
-  end
-
   it "spawns the target app" do
-    expected_ruby_command=
-      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
-
-    expect(Process).to have_received(:spawn).
-                         with("/bin/bash",
-                              "-l",
-                              "-c",
-                              expected_ruby_command)
-  end
-
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-  it "changes directories before trying to spawn" do
-=======
-  it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
-    expect(File).to have_received(:expand_path).ordered
-    expect(Dir).to have_received(:chdir).ordered
-    expect(Process).to have_received(:spawn).ordered
+    expect(Dir).to have_received(:chdir).with(target_directory).ordered
+    expect(Process).to have_received(:spawn).with("/bin/bash",
+                                                  "-l",
+                                                  "-c",
+                                                  "ruby -r #{original_directory}/src/probe.rb bin/rails").ordered
   end
 end
-</code></pre><p>And then we change the code so the test passes.</p><pre><code>require 'pathname'
-
-class RubyExplorer
+</code></pre><p>And then we change the code so the test passes.</p><pre><code>class RubyExplorer
   attr_accessor :target_directory
 
   def run
-    bin_directory= Pathname.new($0).dirname
-    src_directory= File.expand_path("#{bin_directory}/../src")
+    original_directory= Dir.getwd
     Dir.chdir(target_directory)
-    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{original_directory}/src/probe.rb bin/rails")
   end
 end
 </code></pre><p>Let's add a dummy Probe class, so we have something to load:</p><pre><code>class Probe
 end
-
-puts "Hello from the probe!"
 </code></pre><p>And we're ready to try again:</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
 jmax@deepthought $
 The most common rails commands are:
@@ -313,62 +213,33 @@ Fixing the test and code again:</p><pre><code>require './src/ruby_explorer'
 
 describe "RubyExplorer#run" do
   let(:app) { RubyExplorer.new }
-
-  let(:target_directory) {"../target-directory"}
-  let(:bin_directory) {"../ruby-explorer/bin"}
-  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
-  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
-  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+  let(:target_directory) {"target_directory"}
+  let(:original_directory) {"original-directory"}
 
   before do
     allow(Dir).to receive(:chdir)
     allow(Process).to receive(:spawn)
-    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+    allow(Dir).to receive(:getwd).and_return(original_directory)
 
-    $0= cli_binary_path
     app.target_directory= target_directory
     app.run
   end
 
-  it "finds the absolute path of the src directory" do
-    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
-  end
-
-  it "changes to the the target directory" do
-    expect(Dir).to have_received(:chdir).with(target_directory)
-  end
-
   it "spawns the target app" do
-    expected_ruby_command=
-      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
-
-    expect(Process).to have_received(:spawn).
-                         with("/bin/bash",
-                              "-l",
-                              "-c",
-                              expected_ruby_command)
-  end
-
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-  it "changes directories before trying to spawn" do
-=======
-  it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
-    expect(File).to have_received(:expand_path).ordered
-    expect(Dir).to have_received(:chdir).ordered
-    expect(Process).to have_received(:spawn).ordered
+    expect(Dir).to have_received(:chdir).with(target_directory).ordered
+    expect(Process).to have_received(:spawn).with("/bin/bash",
+                                                  "-l",
+                                                  "-c",
+                                                  "ruby -r #{original_directory}/src/probe.rb bin/rails server").ordered
   end
 end
-</code></pre><pre><code>require 'pathname'
-
-class RubyExplorer
+</code></pre><pre><code>class RubyExplorer
   attr_accessor :target_directory
 
   def run
-    bin_directory= Pathname.new($0).dirname
-    src_directory= File.expand_path("#{bin_directory}/../src")
+    original_directory= Dir.getwd
     Dir.chdir(target_directory)
-    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{original_directory}/src/probe.rb bin/rails server")
   end
 end
 </code></pre><p>Crossing our fingers, we try running it again:</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails
@@ -413,50 +284,24 @@ smell in our tests for it:</p><pre><code>require './src/ruby_explorer'
 
 describe "RubyExplorer#run" do
   let(:app) { RubyExplorer.new }
-
-  let(:target_directory) {"../target-directory"}
-  let(:bin_directory) {"../ruby-explorer/bin"}
-  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
-  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
-  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+  let(:target_directory) {"target_directory"}
+  let(:original_directory) {"original-directory"}
 
   before do
     allow(Dir).to receive(:chdir)
     allow(Process).to receive(:spawn)
-    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+    allow(Dir).to receive(:getwd).and_return(original_directory)
 
-    $0= cli_binary_path
     app.target_directory= target_directory
     app.run
   end
 
-  it "finds the absolute path of the src directory" do
-    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
-  end
-
-  it "changes to the the target directory" do
-    expect(Dir).to have_received(:chdir).with(target_directory)
-  end
-
   it "spawns the target app" do
-    expected_ruby_command=
-      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
-
-    expect(Process).to have_received(:spawn).
-                         with("/bin/bash",
-                              "-l",
-                              "-c",
-                              expected_ruby_command)
-  end
-
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-  it "changes directories before trying to spawn" do
-=======
-  it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
-    expect(File).to have_received(:expand_path).ordered
-    expect(Dir).to have_received(:chdir).ordered
-    expect(Process).to have_received(:spawn).ordered
+    expect(Dir).to have_received(:chdir).with(target_directory).ordered
+    expect(Process).to have_received(:spawn).with("/bin/bash",
+                                                  "-l",
+                                                  "-c",
+                                                  "ruby -r #{original_directory}/src/probe.rb bin/rails server").ordered
   end
 end
 </code></pre><p>We're actually testing three different things at once.</p><ul><li>First, we test that we change to the correct (i.e. the target) directory</li><li>Second we test that we spawn the Rails app correctly</li><li>Finally, we also test that we do things in the correct order; that
@@ -474,25 +319,16 @@ existing test into three tests, we get:</p><pre><code>require './src/ruby_explor
 
 describe "RubyExplorer#run" do
   let(:app) { RubyExplorer.new }
-
-  let(:target_directory) {"../target-directory"}
-  let(:bin_directory) {"../ruby-explorer/bin"}
-  let(:cli_binary_path) {"#{bin_directory}/ruby-explorer"}
-  let(:absolute_bin_directory) {"/home/user/ruby-explorer/bin"}
-  let(:absolute_src_directory) {"/home/user/ruby-explorer/src"}
+  let(:target_directory) {"target_directory"}
+  let(:original_directory) {"original-directory"}
 
   before do
     allow(Dir).to receive(:chdir)
     allow(Process).to receive(:spawn)
-    allow(File).to receive(:expand_path).and_return(absolute_src_directory)
+    allow(Dir).to receive(:getwd).and_return(original_directory)
 
-    $0= cli_binary_path
     app.target_directory= target_directory
     app.run
-  end
-
-  it "finds the absolute path of the src directory" do
-    expect(File).to have_received(:expand_path).with("#{bin_directory}/../src")
   end
 
   it "changes to the the target directory" do
@@ -501,7 +337,7 @@ describe "RubyExplorer#run" do
 
   it "spawns the target app" do
     expected_ruby_command=
-      "ruby -r #{absolute_src_directory}/probe.rb bin/rails server"
+      "ruby -r #{original_directory}/src/probe.rb bin/rails server"
 
     expect(Process).to have_received(:spawn).
                          with("/bin/bash",
@@ -510,12 +346,7 @@ describe "RubyExplorer#run" do
                               expected_ruby_command)
   end
 
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
   it "changes directories before trying to spawn" do
-=======
-  it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
-    expect(File).to have_received(:expand_path).ordered
     expect(Dir).to have_received(:chdir).ordered
     expect(Process).to have_received(:spawn).ordered
   end
@@ -573,11 +404,7 @@ describe "RubyExplorer#run" do
                               expected_ruby_command)
   end
 
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-  it "changes directories before trying to spawn" do
-=======
   it "picks off the src directory, changes directories, and spawns, in that order" do
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; 073b5bb815967e60ea9444d977788aa667efa3ac
     expect(File).to have_received(:expand_path).ordered
     expect(Dir).to have_received(:chdir).ordered
     expect(Process).to have_received(:spawn).ordered

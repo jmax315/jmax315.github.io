@@ -64,100 +64,14 @@ actually invoke) just handle the command line arguments and options,
 then create and configure an application object and pass off control
 to it.</p><p>So, the first test is simply that the CLI creates an application object.
 I'm going to go through this first test in rather excruciating
-detail; I'll speed up the presentation after that, I promise.</p><pre><code>require './src/ruby_explorer'
-
-describe "The CLI" do
-  def set_argv(new_value)
-    Object.__send__(:remove_const, :ARGV)
-    Object.const_set(:ARGV, new_value)
-  end
-
-  def invoke_cli_with(argv)
-    $the_app= nil
-    @error_exit= nil
-    @stderr_output= nil
-    @saved_stderr= $stderr
-    $stderr= StringIO.new
-
-    set_argv(argv)
-    begin
-      load("bin/ruby-explorer")
-    rescue SystemExit =&gt; e
-      @error_exit= !e.success?
-    end
-    @stderr_output= $stderr.string
-    $stderr= @saved_stderr
-  end
-
-  def self.expect_cli_to_fail_with(argv)
-    before do
-      invoke_cli_with(argv)
-    end
-
-    it "does not create the app" do
-      expect($the_app).to be_nil
-    end
-
-    it "prints a usage message to stderr" do
-      expect(@stderr_output).to match(/usage:/)
-    end
-
-    it "exits with an error status" do
-      expect(@error_exit).to be(true)
-    end
-  end
-
-  def self.expect_cli_to_succeed_with(argv)
-    before do
-      invoke_cli_with(argv)
-    end
-
-    it "creates the app" do
-      expect($the_app).not_to be_nil
-    end
-
-    it "does not print anything to stderr" do
-      expect(@stderr_output).to eq("")
-    end
-
-    it "exits with an success status" do
-      expect(@error_exit).to be(false)
-    end
-
-    yield if block_given?
-  end
-
-
+detail; I'll speed up the presentation after that, I promise.</p><pre><code>describe "The CLI" do
   before do
-    allow_any_instance_of(RubyExplorer).to receive(:run)
+    $the_app= nil
+    load("bin/ruby-explorer")
   end
 
-  describe "with no arguments" do
-    expect_cli_to_fail_with []
-  end
-
-  describe "with more than one argument" do
-    expect_cli_to_fail_with ["one-option", "another-option"]
-  end
-
-  describe "with a short help option" do
-    expect_cli_to_fail_with ["-h"]
-  end
-
-  describe "with a long help option" do
-    expect_cli_to_fail_with ["--help"]
-  end
-
-  describe "with a single argument" do
-    expect_cli_to_succeed_with ["not-an-option"] do
-      it "sets the app's target directory" do
-        expect($the_app.target_directory).to eq("not-an-option")
-      end
-
-      it "calls the app's run method" do
-        expect($the_app).to have_received(:run)
-      end
-    end
+  it "creates the app" do
+    expect($the_app).not_to be_nil
   end
 end
 </code></pre><p>We fake running the script by calling <code>load</code>. Ruby, in
@@ -190,33 +104,9 @@ jmax@deepthought $
 </code></pre><p>The test fails. Perfectly reasonable, since we're trying to load a
 file that we haven't created yet. So, we create the file:</p><pre><code>#!/bin/env ruby
 
-require 'optparse'
-
-require_relative '../src/ruby_explorer.rb'
-
-
-optparser= OptionParser.new do |opts|
-  opts.banner= "usage: ruby-explorer [options] project-directory"
-  opts.separator ""
-
-  opts.on("-h", "--help", "Show this message") do
-    $stderr.puts opts
-    exit false
-  end
-end
-
-optparser.parse!
-
-if ARGV.length != 1
-  $stderr.puts optparser
-  exit false
-end
+require_relative "../src/ruby_explorer.rb"
 
 $the_app= RubyExplorer.new
-$the_app.target_directory= ARGV[0]
-$the_app.run
-
-exit true
 </code></pre><p>Running the test again:</p><pre><code class="lang-shell">jmax@deepthought $ rspec
 Resolving dependencies...
 F
@@ -242,17 +132,7 @@ jmax@deepthought $
 </code></pre><p>Progress! The test still fails. But the important point is that it
 fails <em>differently.</em> Before, we were failing because the
 CLI didn't exist. Now, we're failing because the app class doesn't exist.</p><p>The next thing to do, obviously, is create the app class, in
-src/ruby_explorer.rb:</p><pre><code>require 'pathname'
-
-class RubyExplorer
-  attr_accessor :target_directory
-
-  def run
-    bin_directory= Pathname.new($0).dirname
-    src_directory= File.expand_path("#{bin_directory}/../src")
-    Dir.chdir(target_directory)
-    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
-  end
+src/ruby_explorer.rb:</p><pre><code>class RubyExplorer
 end
 </code></pre><p>And our first test passes. Before leaving it, there's one more thing
 to check. A secondary purpose of the tests is to provide
@@ -273,16 +153,10 @@ I'm going to skip over here, because they aren't directly related to
 the topic at hand (snooping on a Rails app). The details of
 the CLI testing are interesting enough to warrant a detailed post,
 just not here. I'm adding that to my list of topics on deck. Watch
-that space if you want details.</p><p>When all was said and done, the stub app class ended up like this:</p><pre><code>require 'pathname'
-
-class RubyExplorer
+that space if you want details.</p><p>When all was said and done, the stub app class ended up like this:</p><pre><code>class RubyExplorer
   attr_accessor :target_directory
 
   def run
-    bin_directory= Pathname.new($0).dirname
-    src_directory= File.expand_path("#{bin_directory}/../src")
-    Dir.chdir(target_directory)
-    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe.rb bin/rails server")
   end
 end
 </code></pre><p>With this for the CLI itself:</p><pre><code>#!/bin/env ruby
