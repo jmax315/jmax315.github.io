@@ -1,1 +1,622 @@
-<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>Exploring Ruby on Rails Projects With Metaprogramming: Creating the Probe</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>Exploring Ruby on Rails Projects With Metaprogramming: Creating the Probe</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Updates</div><div id="page-set" /><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app_class.html">Creating the App Object</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_probe.html">Creating the Probe</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"><a href="creating_the_app_class.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"></span></div><h2>The Probe Class</h2><p>Coming soon</p><div id="bottom-navigation"><span class="navigation-prev"><a href="creating_the_app_class.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"></span></div></div></body></html>
+<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>John's Free Energy: Exploring Ruby on Rails Projects With Metaprogramming: Creating the Probe</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>Exploring Ruby on Rails Projects With Metaprogramming: Creating the Probe</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app_class.html">Creating the App Object</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_probe.html">Creating the Probe</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/running_the_app.html">Running the App</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"><a href="creating_the_app_class.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="running_the_app.html">Next &gt;</a></span></div><h2>The Probe Class</h2><h3>Details of Inserting the Probe</h3><p>Time to put some meat on the probe. The probe is a little unusual,
+for Ruby code, in that it doesn't just have class
+definitions. Thinking about the probe's environment, it gets loaded
+with Ruby's <code>-r</code> option when <code>RubyExplorer</code>
+starts up the target app. So there's going to have to be a little bit
+of immediate code in there; code which actually executes at the time
+that it's loaded, and wraps <code>require</code> and the other file-loading functions.</p><p>But that's going to present a problem for testing,
+in that we don't want that immediate code to screw things up when we
+load <code>probe.rb</code> in our tests; in particular
+we <em>do not</em> want <code>require</code> to get wrapped
+during testing. What to do?</p><p>Let's step back a minute. Suppose that instead of putting that
+immediate code into probe.rb, we move it out to a different file, and
+then have <code>RubyExplorer</code> pass <em>that</em> file
+using <code>-r</code> when we spawn the target app. Then we can
+safely load up <code>probe.rb</code> in our tests. Furthermore,
+because the immediate code is separated out, we can safely test it
+too; we just have to make sure we use RSpec to stub out any dangerous
+methods on the probe first.</p><p>OK, let's try this plan out. We'll create a
+method, <code>Probe#install</code>, which will do the dirty
+work (whatever that dirty work turns out to be), and call it from a
+new file called <code>probe_loader.rb</code>. The first order of
+business is to change our test for <code>RubyExplorer</code> to
+require our probe loader, instead of the probe itself:</p><pre><code>  it "spawns the target app" do
+    expected_ruby_command=
+      "ruby -r #{absolute_src_directory}/probe_loader.rb bin/rails server"
+
+    expect(Process).to have_received(:spawn).
+                         with("/bin/bash",
+                              "-l",
+                              "-c",
+                              expected_ruby_command)
+  end
+</code></pre><p>The change to <code>RubyExplorer</code> itself is obvious:</p><pre><code>require 'pathname'
+
+class RubyExplorer
+  attr_accessor :target_directory
+
+  def run
+    bin_directory= Pathname.new($0).dirname
+    src_directory= File.expand_path("#{bin_directory}/../src")
+    Dir.chdir(target_directory)
+    Process.spawn("/bin/bash", "-l", "-c", "ruby -r #{src_directory}/probe_loader.rb bin/rails server")
+  end
+end
+</code></pre><p>That taken care of, let's create a test for load_probe.rb:</p><pre><code>require "./src/probe"
+
+describe "load_probe.rb" do
+  let(:the_probe) { Probe.new }
+
+  before do
+    allow(Probe).to receive(:new).and_return(the_probe)
+    allow(the_probe).to receive(:install)
+
+    load("./src/probe_loader.rb")
+  end
+
+  it "calls Probe#install" do
+    expect(the_probe).to have_received(:install)
+  end
+end
+</code></pre><p>Then we can create <code>probe_loader.rb</code> and
+modify <code>Probe</code> to make the test pass:</p><pre><code>require_relative "probe"
+
+Probe.new.install
+</code></pre><pre><code>class Probe
+  def install
+  end
+end
+</code></pre><h3>Expanding the Probe</h3><p>The next thing is to have <code>Probe#install</code> actually
+wrap <code>require</code>, <code>require_relative</code>,
+and <code>load</code>. We start out by having it
+call <code>wrap</code> for <code>require</code>: </p><pre><code>require "./src/probe"
+
+describe "Probe" do
+  let(:the_probe) { Probe.new }
+
+  describe "#insert" do
+    before do
+      allow(the_probe).to receive(:wrap)
+
+      the_probe.install
+    end
+
+    it "wraps require" do
+      expect(the_probe).to have_received(:wrap).with(Kernel, :require)
+    end
+  end
+end
+</code></pre><pre><code>class Probe
+  def install
+    wrap(Kernel, :require)
+  end
+
+  def wrap(klass, method)
+  end
+end
+</code></pre><p>Adding <code>require_relative</code> and <code>load</code>:</p><pre><code>require "./src/probe"
+
+describe "Probe" do
+  let(:the_probe) { Probe.new }
+
+  describe "#insert" do
+    before do
+      allow(the_probe).to receive(:wrap)
+
+      the_probe.install
+    end
+
+    it "wraps require" do
+      expect(the_probe).to have_received(:wrap).with(Kernel, :require)
+    end
+
+    it "wraps require_relative" do
+      expect(the_probe).to have_received(:wrap).with(Kernel, :require_relative)
+    end
+
+    it "wraps load" do
+      expect(the_probe).to have_received(:wrap).with(Kernel, :load)
+    end
+  end
+end
+</code></pre><pre><code>class Probe
+  def install
+    wrap(Kernel, :require)
+    wrap(Kernel, :require_relative)
+    wrap(Kernel, :load)
+  end
+
+  def wrap(klass, method)
+  end
+end
+</code></pre><p>Now that we have <code>Probe#install</code> working correctly,
+let's actually wrap some code. We face a problem that we didn't in our
+spikes: How to test? If we follow our spikes' lead, our wrapper could
+just print to $stdout, and then we could check to make sure that we
+generate the expected output.</p><p>But ultimately, as we noted a while ago, we don't want our wrappers
+to interfere with the target's output. So let's try another approach,
+and delegate things to a callback. Ruby supports this sort of thing by
+allowing any method call to also pass a block of code. So we'll pass a
+block of code to <code>wrap</code>, which will become the body of
+the wrapper.</p><p>Testing <code>Probe#wrap</code> then looks like:</p><pre><code>  describe "#wrap" do
+    class WrapTarget
+      def a_method
+      end
+    end
+
+    let(:wrap_target) { WrapTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapTarget, :a_method) do
+        @got_called_back= true
+      end
+
+      wrap_target.a_method
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+  end
+</code></pre><p>And the code is:</p><pre><code>  def wrap(klass, method_id)
+    klass.define_method(method_id) do
+      yield
+    end
+</code></pre><h3>Making the Wrappers Transparent</h3><p>Unlike our spike, we never call the original code. This will not do
+as a permanent state, so let's fix that next. The test:</p><pre><code>  describe "#wrap" do
+    class WrapTarget
+      attr_accessor :a_method_called
+
+      def initialize
+        @a_method_called= false
+      end
+
+      def a_method
+        @a_method_called= true
+      end
+    end
+
+    let(:wrap_target) { WrapTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapTarget, :a_method) do |original_method|
+        @got_called_back= true
+        original_method.call
+      end
+
+      wrap_target.a_method
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(wrap_target.a_method_called).to be(true)
+    end
+  end
+</code></pre><p>Taking our spike as an example, we try to make it pass:</p><pre><code>  def wrap(klass, method_id)
+    original_method= klass.method(method_id)
+    klass.define_method(method_id) do
+      yield(original_method)
+    end
+  end
+</code></pre><pre><code class="lang-shell">Failures:
+
+  1) Probe #wrap calls the wrap block back
+     Failure/Error:
+       the_probe.wrap(WrapTarget, :a_method) do |original_method|
+         @got_called_back= true
+         original_method.call
+       end
+
+     NameError:
+       undefined method `a_method' for class `#&lt;Class:WrapTarget&gt;'
+       Did you mean?  method
+     # ./src/probe.rb:9:in `method'
+     # ./src/probe.rb:9:in `wrap'
+     # ./spec/unit/probe_spec.rb:43:in `block (3 levels) in &lt;top (required)&gt;'
+
+  2) Probe #wrap calls the original method
+     Failure/Error:
+       the_probe.wrap(WrapTarget, :a_method) do |original_method|
+         @got_called_back= true
+         original_method.call
+       end
+
+     NameError:
+       undefined method `a_method' for class `#&lt;Class:WrapTarget&gt;'
+       Did you mean?  method
+     # ./src/probe.rb:9:in `method'
+     # ./src/probe.rb:9:in `wrap'
+     # ./spec/unit/probe_spec.rb:43:in `block (3 levels) in &lt;top (required)&gt;'
+
+Finished in 0.03383 seconds (files took 0.12551 seconds to load)
+27 examples, 2 failures
+
+Failed examples:
+
+rspec ./spec/unit/probe_spec.rb:51 # Probe #wrap calls the wrap block back
+rspec ./spec/unit/probe_spec.rb:55 # Probe #wrap calls the original method
+
+jmax@deepthought $
+</code></pre><p>Failure! What went wrong? Everything worked in our spikes... After
+perusing the Ruby documentation for a bit, we realize that we lucked
+out a bit in our spikes. They wrap <code>require</code>, which is a
+method in the <code>Kernel</code> module, whereas our test is trying
+to wrap an instance method in an object.</p><p>The rules are a little different for wrapping methods in a
+class. Instead of using <code>method</code> to find the original
+method, we must use <code>instance_method</code>. But <code>instance_method</code> returns an <em>unbound method</em>, which can't be called until it is connected (<em>bound</em>, in Ruby's terminology) to an object. We do this
+using <code>bind</code>. In essence, the unbound method has
+no <code>self</code>, and what we do with <code>bind</code> is provide a value for <code>self</code>.</p><p>The final code ends up looking like:</p><pre><code>  def wrap(klass, method_id)
+    original_method= klass.instance_method(method_id)
+    klass.define_method(method_id) do
+      yield(original_method.bind(self))
+    end
+  end
+</code></pre><p>And we're back to passing tests.</p><h3>We Need More Wrappers</h3><p>This little speed bump suggests that we've got a couple more
+cases of wrapping a method that we need to consider, though: wrapping
+a class method, and wrapping a module method.</p><p>Turning to wrapping class methods, we'll
+create <code>Probe#wrap_class_method</code>, and add a test for it:</p><pre><code>  describe "#wrap_class_method" do
+    class WrapTarget
+      @@a_class_method_called= false
+
+      def self.a_method
+        @@a_class_method_called= true
+      end
+    end
+
+    before do
+      @got_called_back= false
+      the_probe.wrap_class_method(WrapTarget, :a_method) do |original_method|
+        @got_called_back= true
+        original_method.call
+      end
+
+      WrapTarget.a_method
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(WrapTarget.class_variable_get(:@@a_class_method_called)).to be(true)
+    end
+  end
+</code></pre><p>With the implementation:</p><pre><code>  def wrap_class_method(klass, method_id)
+    original_method= klass.method(method_id)
+    klass.singleton_class.define_method(method_id) do
+      yield(original_method)
+    end
+  end
+</code></pre><p>On to wrapping a module metod. The Ruby documentation, as well
+as our original spikes, suggest that our existing <code>wrap</code>
+method should hand wrapping a module method without change. Let's add
+another test, where we try to wrap a module method, and see.</p><pre><code>  describe "#wrap on a module method" do
+    module WrapModule
+      def a_module_method
+        @a_module_method_called= true
+      end
+    end
+
+    class WrapModuleMethodTarget
+      include WrapModule
+
+      attr_accessor :a_module_method_called
+
+      def initialize
+        @a_module_method_called= false
+      end
+    end
+
+    let(:wrap_target) { WrapModuleMethodTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapModule, :a_module_method) do |original_method|
+        @got_called_back= true
+        original_method.call
+      end
+
+      wrap_target.a_module_method
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(wrap_target.a_module_method_called).to be(true)
+    end
+  end
+</code></pre><p>And it works.</p><h3>The Wrappers and Arguments</h3><p>The final stage before we're ready to try this all out on our
+target Rails app is to handle the arguments of the wrapped
+function. Right now, we aren't passing any arguments when we call the
+original method, and that's pretty obviously not going to work. Let's
+add tests to each of our method wrapping cases (instance, class, and
+module methods), to force us to pass the method arguments through. We
+have to tweak the test setup a bit to do this, but only a little. The
+test code ends up looking like:</p><pre><code>  describe "#wrap" do
+    class WrapTarget
+      attr_accessor :a_method_called, :arg_value
+
+      def initialize
+        @a_method_called= false
+        @arg_value= nil
+      end
+
+      def a_method(arg)
+        @a_method_called= true
+        @arg_value= arg
+      end
+    end
+
+    let(:wrap_target) { WrapTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapTarget, :a_method) do |original_method, args|
+        @got_called_back= true
+        original_method.call(*args)
+      end
+
+      wrap_target.a_method("expected arg value")
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(wrap_target.a_method_called).to be(true)
+    end
+
+    it "passes the arg value through" do
+      expect(wrap_target.arg_value).to eq("expected arg value")
+    end
+  end
+
+  describe "#wrap_class_method" do
+    class WrapClassMethodTarget
+      @@a_class_method_called= false
+      @@arg_value= nil
+
+      def self.a_method(arg)
+        @@a_class_method_called= true
+        @@arg_value= arg
+      end
+    end
+
+    before do
+      @got_called_back= false
+      the_probe.wrap_class_method(WrapClassMethodTarget, :a_method) do |original_method, args|
+        @got_called_back= true
+        original_method.call(*args)
+      end
+
+      WrapClassMethodTarget.a_method("expected arg value")
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(WrapClassMethodTarget.class_variable_get(:@@a_class_method_called)).to be(true)
+    end
+
+    it "passes the arg value through" do
+      expect(WrapClassMethodTarget.class_variable_get(:@@arg_value)).to eq("expected arg value")
+    end
+  end
+
+  describe "#wrap on a module method" do
+    module WrapModule
+      def a_module_method(arg)
+        @a_module_method_called= true
+        @arg_value= arg
+      end
+    end
+
+    class WrapModuleMethodTarget
+      include WrapModule
+
+      attr_accessor :a_module_method_called, :arg_value
+
+      def initialize
+        @a_module_method_called= false
+        @arg_value= nil
+      end
+    end
+
+    let(:wrap_target) { WrapModuleMethodTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapModule, :a_module_method) do |original_method, args|
+        @got_called_back= true
+        original_method.call(*args)
+      end
+
+      wrap_target.a_module_method("expected arg value")
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(wrap_target.a_module_method_called).to be(true)
+    end
+
+    it "passes the arg value through" do
+      expect(wrap_target.arg_value).to eq("expected arg value")
+    end
+  end
+</code></pre><p>And modifying the code to actually pass arguments through to the
+wrapper, we have:</p><pre><code>class Probe
+  def install
+    wrap(Kernel, :require)
+    wrap(Kernel, :require_relative)
+    wrap(Kernel, :load)
+  end
+
+  def wrap(klass, method_id)
+    original_method= klass.instance_method(method_id)
+    klass.define_method(method_id) do |*args|
+      yield(original_method.bind(self), args)
+    end
+  end
+
+  def wrap_class_method(klass, method_id)
+    original_method= klass.method(method_id)
+    klass.singleton_class.define_method(method_id) do |*args|
+      yield(original_method, args)
+    end
+  end
+end
+</code></pre><p>Looking at our wrappers, we notice that we've ommited something
+very important from our tests: return values. Right now, we're
+completely ignoring the return value from the method we've
+wrapped. This hasn't bitten us, because Ruby's convention of returning
+the final value computed in a method means that we are, in fact,
+returning the correct values. (And honestly, nobody ever pays
+attention to the return values
+from <code>require</code>, <code>require_relative</code>,
+and <code>load</code> anyway). Still it's an embarrassing omission, so
+let's get it fixed before anyone notices.</p><p>Adding tests for each of our three scenarios, we have:</p><pre><code>  describe "#wrap" do
+    class WrapTarget
+      attr_accessor :a_method_called, :arg_value
+
+      def initialize
+        @a_method_called= false
+        @arg_value= nil
+      end
+
+      def a_method(arg)
+        @a_method_called= true
+        @arg_value= arg
+        return "a_method expected return value"
+      end
+    end
+
+    let(:wrap_target) { WrapTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapTarget, :a_method) do |original_method, args|
+        @got_called_back= true
+        original_method.call(*args)
+      end
+
+      wrap_target.a_method("expected arg value")
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(wrap_target.a_method_called).to be(true)
+    end
+
+    it "passes the arg value through" do
+      expect(wrap_target.arg_value).to eq("expected arg value")
+    end
+
+    it "returns the original return value" do
+      expect(wrap_target.a_method("")).to eq("a_method expected return value")
+    end
+  end
+
+  describe "#wrap_class_method" do
+    class WrapClassMethodTarget
+      @@a_class_method_called= false
+      @@arg_value= nil
+
+      def self.a_class_method(arg)
+        @@a_class_method_called= true
+        @@arg_value= arg
+        return "a_class_method expected return value"
+      end
+    end
+
+    before do
+      @got_called_back= false
+      the_probe.wrap_class_method(WrapClassMethodTarget, :a_class_method) do |original_method, args|
+        @got_called_back= true
+        original_method.call(*args)
+      end
+
+      WrapClassMethodTarget.a_class_method("expected arg value")
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(WrapClassMethodTarget.class_variable_get(:@@a_class_method_called)).to be(true)
+    end
+
+    it "passes the arg value through" do
+      expect(WrapClassMethodTarget.class_variable_get(:@@arg_value)).to eq("expected arg value")
+    end
+
+    it "returns the original return value" do
+      expect(WrapClassMethodTarget.a_class_method("")).to eq("a_class_method expected return value")
+    end
+  end
+
+  describe "#wrap on a module method" do
+    module WrapModule
+      def a_module_method(arg)
+        @a_module_method_called= true
+        @arg_value= arg
+        return "a_module_method expected return value"
+      end
+    end
+
+    class WrapModuleMethodTarget
+      include WrapModule
+
+      attr_accessor :a_module_method_called, :arg_value
+
+      def initialize
+        @a_module_method_called= false
+        @arg_value= nil
+      end
+    end
+
+    let(:wrap_target) { WrapModuleMethodTarget.new }
+
+    before do
+      @got_called_back= false
+      the_probe.wrap(WrapModule, :a_module_method) do |original_method, args|
+        @got_called_back= true
+        original_method.call(*args)
+      end
+
+      wrap_target.a_module_method("expected arg value")
+    end
+
+    it "calls the wrap block back" do
+      expect(@got_called_back).to be(true)
+    end
+
+    it "calls the original method" do
+      expect(wrap_target.a_module_method_called).to be(true)
+    end
+
+    it "passes the arg value through" do
+      expect(wrap_target.arg_value).to eq("expected arg value")
+    end
+
+    it "returns the original return value" do
+      expect(wrap_target.a_module_method("")).to eq("a_module_method expected return value")
+    end
+  end
+</code></pre><p>On to the next thing: Let's try it out on our target app.</p><div id="bottom-navigation"><span class="navigation-prev"><a href="creating_the_app_class.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"><a href="running_the_app.html">Next &gt;</a></span></div></div></body></html>

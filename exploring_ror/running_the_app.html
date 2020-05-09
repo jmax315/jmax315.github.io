@@ -1,0 +1,437 @@
+<html><head><link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" /><link rel="stylesheet" href="/stylesheets/dracula.css" /><script src="/scripts/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><title>John's Free Energy: Exploring Ruby on Rails Projects With Metaprogramming: Running the App</title></head><body><div id="header"><h1>John's Free Energy</h1><h2>Exploring Ruby on Rails Projects With Metaprogramming: Running the App</h2></div><div id="sidebar"><div class="sidebar-page-set-name">Background</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/background/free_energy.html">Why Free Energy?</a></div><div class="sidebar-page-set-page"><a href="/background/about_me.html">About Me</a></div><div class="sidebar-page-set-page"><a href="/background/how_i_started_with_computers.html">How I Discovered Computers</a></div></div><div class="sidebar-page-set-name">Projects</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/toc.html">Exploring Ruby on Rails Projects With Metaprogramming</a></div></div><div class="sidebar-page-set-name">An Lc Ladder Filter Calculator</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/lc_calculator/overview.html">Overview</a></div></div><div class="sidebar-page-set-name">Exploring Rails Projects With Metaprogramming</div><div id="page-set"><div class="sidebar-page-set-page"><a href="/exploring_ror/overview.html">Overview</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/getting_started.html">Getting Started</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/better_monkey_patching.html">Better Monkey Patching</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app.html">Creating the App</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_app_class.html">Creating the App Object</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/creating_the_probe.html">Creating the Probe</a></div><div class="sidebar-page-set-page"><a href="/exploring_ror/running_the_app.html">Running the App</a></div></div></div><div id="content"><div id="top-navigation"><span class="navigation-prev"><a href="creating_the_probe.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"></span></div><h3>Running the app</h3><p>Time to try out ruby-explorer on our Rails app:</p><pre><code class="lang-shell">jmax@deepthought ~/projects/ruby-explorer $ bin/ruby-explorer ../bare-rails
+jmax@deepthought ~/projects/ruby-explorer $ load(["/home/jmax/projects/bare-rails/bin/spring"])
+require(["rubygems"])
+require(["rubygems"]): returned false
+require(["bundler"])
+require(["bundler/compatibility_guard"])
+require(["rubygems"])
+require(["rubygems"]): returned false
+require(["bundler/version"])
+require(["rubygems"])
+require(["rubygems"]): returned false
+  :
+  :
+require(["spring/configuration"])
+require(["spring/configuration"]): returned false
+load(["/home/jmax/projects/bare-rails/bin/rails"])
+load(["/home/jmax/projects/bare-rails/bin/spring"])
+load(["/home/jmax/projects/bare-rails/bin/spring"]): returned true
+require_relative(["../config/boot"])
+Traceback (most recent call last):
+    28: from bin/rails:3:in `&lt;main&gt;'
+    27: from /home/jmax/projects/ruby-explorer/src/probe.rb:28:in `block in wrap'
+    26: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `block in install'
+    25: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `call'
+    24: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `load'
+    23: from /home/jmax/projects/bare-rails/bin/spring:15:in `&lt;top (required)&gt;'
+    22: from /home/jmax/projects/ruby-explorer/src/probe.rb:28:in `block in wrap'
+    21: from /home/jmax/projects/ruby-explorer/src/probe.rb:5:in `block in install'
+    20: from /home/jmax/projects/ruby-explorer/src/probe.rb:5:in `call'
+    19: from /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/rubygems/core_ext/kernel_require.rb:54:in `require'
+    18: from /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/rubygems/core_ext/kernel_require.rb:54:in `require'
+    17: from /home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/binstub.rb:11:in `&lt;top (required)&gt;'
+    16: from /home/jmax/projects/ruby-explorer/src/probe.rb:28:in `block in wrap'
+    15: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `block in install'
+    14: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `call'
+    13: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `load'
+    12: from /home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/bin/spring:49:in `&lt;top (required)&gt;'
+    11: from /home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/client.rb:30:in `run'
+    10: from /home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/client/command.rb:7:in `call'
+     9: from /home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/client/rails.rb:28:in `call'
+     8: from /home/jmax/projects/ruby-explorer/src/probe.rb:28:in `block in wrap'
+     7: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `block in install'
+     6: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `call'
+     5: from /home/jmax/projects/ruby-explorer/src/probe.rb:19:in `load'
+     4: from /home/jmax/projects/bare-rails/bin/rails:8:in `&lt;top (required)&gt;'
+     3: from /home/jmax/projects/ruby-explorer/src/probe.rb:28:in `block in wrap'
+     2: from /home/jmax/projects/ruby-explorer/src/probe.rb:12:in `block in install'
+     1: from /home/jmax/projects/ruby-explorer/src/probe.rb:12:in `call'
+/home/jmax/projects/ruby-explorer/src/probe.rb:12:in `require_relative': cannot load such file -- /home/jmax/projects/ruby-explorer/config/boot (LoadError)
+</code></pre><p>Works great. Right up until the first call
+to <code>require_relative</code>, when it blows up. Our problem is
+that <code>require_relative</code> looks for the specified file
+relative to the file that it's called from. And our wrapper calls the
+original <code>require_relative</code> from a different file than
+our wrapper was called from. Bah. How annoying.</p><h3>Faking require_relative</h3><p>How to deal with this? Well, if we can figure out what file our
+wrapper is getting called from, then we can find the file ourselves
+and call <code>require</code>. Amazingly, Ruby actually lets us do
+that. The <code>caller</code> method gives us a copy of the call
+stack. Sticking a debug print into our <code>require_relative</code>
+wrapper, so we can see exactly what we have, like this:</p><pre><code>    wrap(Kernel, :require_relative) do |original_require_relative, args|
+      # DEBUG
+      puts caller
+
+      puts "require_relative(#{args})"
+      return_value= original_require_relative.call(*args)
+      puts "require_relative(#{args}): returned #{return_value}"
+      return_value
+    end
+</code></pre><p>We get the result:</p><pre><code class="lang-shell">/home/jmax/projects/ruby-explorer/src/probe.rb:31:in `block in wrap'
+/home/jmax/projects/bare-rails/bin/rails:8:in `&lt;top (required)&gt;'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `load'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `call'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `block in install'
+/home/jmax/projects/ruby-explorer/src/probe.rb:31:in `block in wrap'
+/home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/client/rails.rb:28:in `call'
+/home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/client/command.rb:7:in `call'
+/home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/client.rb:30:in `run'
+/home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/bin/spring:49:in `&lt;top (required)&gt;'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `load'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `call'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `block in install'
+/home/jmax/projects/ruby-explorer/src/probe.rb:31:in `block in wrap'
+/home/jmax/.rvm/gems/ruby-2.5.5/gems/spring-2.1.0/lib/spring/binstub.rb:11:in `&lt;top (required)&gt;'
+/home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/rubygems/core_ext/kernel_require.rb:54:in `require'
+/home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/rubygems/core_ext/kernel_require.rb:54:in `require'
+/home/jmax/projects/ruby-explorer/src/probe.rb:5:in `call'
+/home/jmax/projects/ruby-explorer/src/probe.rb:5:in `block in install'
+/home/jmax/projects/ruby-explorer/src/probe.rb:31:in `block in wrap'
+/home/jmax/projects/bare-rails/bin/spring:15:in `&lt;top (required)&gt;'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `load'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `call'
+/home/jmax/projects/ruby-explorer/src/probe.rb:22:in `block in install'
+/home/jmax/projects/ruby-explorer/src/probe.rb:31:in `block in wrap'
+bin/rails:3:in `&lt;main&gt;'
+</code></pre><p>The first entry is us; when we call <code>caller</code>, we
+push a frame onto the stack, and <code>caller</code> dutifully
+reports that to us. The second entry is in the middle
+of <code>wrap</code>. The third one is the code that called our
+wrapper, and the one we're interested in. We can pass a couple
+arguments to <code>caller</code> in case we're only interested in
+part of the stack, as here. By changing our call
+to <code>caller(2,1)</code>, we can get just the frame we're
+interested in.</p><p>The return value from <code>caller</code> is still an array,
+even though we only asked for one entry. Using <code>first</code>,
+we can get the first (and only) element of the array. We could do the
+same thing with a subscript, but I think using <code>first</code> is
+slightly clearer. We can then use <code>split</code> and another
+call to <code>first</code> to get the actual path of our
+caller. Putting it all together, we
+use <code>caller.first.split(":").first</code> - and we have the
+full path of the file that called our wrapper.</p><p>File path in hand, our wrapper
+for <code>require_relative</code> becomes:</p><pre><code>    wrap(Kernel, :require_relative) do |original_require_relative, args|
+      puts "require_relative(#{args})"
+
+      caller_path= caller(2,1).first.split(":").first
+      base_directory= Pathname.new(caller_path).dirname
+      absolute_file= "#{base_directory}/#{args.first}"
+
+      return_value= require(absolute_file)
+
+      puts "require(#{absolute_file}): returned #{return_value}"
+      return_value
+    end
+</code></pre><p>And when we try running ruby-explorer again, we get:</p><pre><code class="lang-shell">jmax@deepthought ~/projects/ruby-explorer $ bin/ruby-explorer ../bare-rails
+jmax@deepthought ~/projects/ruby-explorer $ load(["/home/jmax/projects/bare-rails/bin/spring"])
+require(["rubygems"])
+require(["rubygems"]): returned false
+require(["bundler"])
+require(["bundler/compatibility_guard"])
+require(["rubygems"])
+require(["rubygems"]): returned false
+require(["bundler/version"])
+require(["rubygems"])
+require(["rubygems"]): returned false
+  :
+  :
+require_relative(["../config/boot"])
+require(["/home/jmax/projects/bare-rails/bin/../config/boot"])
+  :
+  :
+=&gt; Booting Puma
+=&gt; Rails 6.0.2.2 application starting in development
+=&gt; Run `rails server --help` for more startup options
+  :
+  :
+load(["/home/jmax/.rvm/gems/ruby-2.5.5/gems/actionmailbox-6.0.2.2/config/routes.rb", false])
+load(["/home/jmax/.rvm/gems/ruby-2.5.5/gems/actionmailbox-6.0.2.2/config/routes.rb", false]): returned true
+load(["/home/jmax/.rvm/gems/ruby-2.5.5/gems/activestorage-6.0.2.2/config/routes.rb", false])
+load(["/home/jmax/.rvm/gems/ruby-2.5.5/gems/activestorage-6.0.2.2/config/routes.rb", false]): returned true
+Puma starting in single mode...
+* Version 4.3.3 (ruby 2.5.5-p157), codename: Mysterious Traveller
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://127.0.0.1:3000
+* Listening on tcp://[::1]:3000
+Use Ctrl-C to stop
+</code></pre><p>Our target app started! Success! Or is it?</p><h3>Another thing to cope with</h3><p>Thinking back to our original problem, we remember that it was
+"I want to know all of the files loaded by a Rails project."
+Have we done that? Sadly, no. Look at the very first call
+to <code>require</code> in our output.  We report that we've been
+asked to <code>require("rubygems")</code>. Where is that file
+located?</p><p>To answer that, we need to dig into the details of the functions
+we're wrapping. The easiest case
+is <code>require_relative</code>. It simply looks for the specified
+file relative to the current file.</p><p> Life is more complicated for <code>require</code>
+and <code>load</code>. In those cases, the code looks at the first
+character of the filename. If it's '/', '~', or '.', then it just
+looks for the file as specified, as an absolute path, a path relative
+to the current user's home directory, or relative to the current
+directory, respectively. Pretty simple.</p><p>But most of the calls to <code>require</code> in our output so
+far aren't like that. They look like, for
+example, <code>require('bundler')</code>. In these cases, Ruby will
+use the global variable <code>$LOAD_PATH</code>, which consists of a
+list of directories. Ruby checks each of them, in order, looking to
+see if (in our example) there's a file called <code>bundler</code>, <code>bundler.rb</code>, or <code>bundler.so</code>. If so, it loads that file. If not, it
+checks the next directory.</p><p>Just to make life even more interesting,
+in the case of <code>require</code>, RubyGems gets into the act as well. It
+actually does something like what we're doing; it replaces Ruby's
+<code>require</code> with it's own version.  Its version searches over
+the <code>$LOAD_PATH</code>, as described above. If it doesn't find
+the file that way, then it searches the installed gems for the
+file. If it finds the file, it <em>activates</em> the gem that it
+found the file in.</p><p>What 'activates' means in this context is that the gem's
+directories are added to <code>$LOAD_PATH</code>. This is a little
+vague, because it's actually the gem's code which adds entries to
+$LOAD_PATH. <em>Usually</em>, just the gem's lib directory will be
+added, but that's only a convention, so we can't rely on it.</p><p>This so-called 'RubyGems hack' is actually the mechanism that
+resolves most of our calls, so we can't neglect it.</p><p>So, how do we deal with all this?
+Checking <code>$LOAD_PATH</code> isn't too bad; we can implement
+that. Duplicating the RubyGems hack, on the other hand, would require
+repeating a significant chunk of RubyGems' code. Worse, some of the
+selected gem's code would likely get executed twice; once by RubyGems,
+and once by us.</p><p>We're saved by a few things:</p><ul><li>First, when we <code>require</code> a
+file, <code>require</code> returns false if the file was already
+loaded. Remember that <code>require</code> promises to never load
+the same file twice. So if our call-through to the original version
+of <code>require</code> returns <code>false</code>, we're done; no
+additional file was loaded by the call.</li><li>Second, <code>require_relative</code> makes the same
+promise; if it returns <code>false</code>, we're done.</li><li>Third, the way in which <code>require</code>
+and <code>require_relative</code> implement that feature is helpful
+to us. They do it by stashing the <em>absolute</em> path of each
+file pulled in by <code>require</code>
+or <code>require_relative</code> in the
+array <code>$LOADED_FEATURES</code>. So if <code>require</code>
+or <code>require_relative</code> returns <code>true</code>, we can
+search <code>$LOADED_FEATURES</code> to pick up the absolute path of
+the loaded file.</li></ul><p>In summary, for <code>require</code>
+and <code>require_relative</code>, we can
+check <code>$LOADED_FEATURES</code> after the
+call. For <code>load</code>, we can see if the file exists relative
+to the current directory, and if not,
+check <code>$LOAD_PATH</code>.</p><h3>Finding <code>require</code>'d files</h3><p>So, let's implement tests for all
+this. Taking <code>require</code>
+and <code>require_relative</code> first, it seems good to implement the code for
+finding the actual file loaded in a new
+method, <code>require_file(file, loaded_features)</code>. The first argument is the filename passed to <code>require</code>
+or <code>require_relative</code>, and the second
+is <code>$LOADED_FEATURES</code>. This brings out an interesting
+feature of TDD; we have that second argument to make testing easier,
+but it's actually a better design; the method isn't coupled to a
+global variable any more.</p><p>Our tests for it are:</p><pre><code>  describe "#require_file" do
+    it "doesn't find a file that hasn't been loaded" do
+      expect(the_probe.require_file("a-file", [])).to be_nil
+    end
+
+    it "finds a loaded file with no path and no extension when the loaded file has a .rb extension" do
+      expect(the_probe.require_file("a-file", ["/some/path/wrong-file.rb", "/some/path/a-file.rb"])).
+        to eq("/some/path/a-file.rb")
+    end
+
+    it "finds a loaded file with no path and no extension when the loaded file has a .so extension" do
+      expect(the_probe.require_file("a-file", ["/some/path/wrong-file.rb", "/some/path/a-file.so"])).
+        to eq("/some/path/a-file.so")
+    end
+
+    it "finds a loaded file with no path and an .rb extension when the loaded file has a .rb extension" do
+      expect(the_probe.require_file("a-file.rb", ["/some/path/wrong-file.rb", "/some/path/a-file.rb"])).
+        to eq("/some/path/a-file.rb")
+    end
+
+    it "finds a loaded file with no path and an .so extension when the loaded file has a .so extension" do
+      expect(the_probe.require_file("a-file.so", ["/some/path/wrong-file.rb", "/some/path/a-file.so"])).
+        to eq("/some/path/a-file.so")
+    end
+
+    it "finds a loaded file with a path and no extension when the loaded file has a .rb extension" do
+      expect(the_probe.require_file("../a-file", ["/some/path/wrong-file.rb", "/some/path/a-file.rb"])).
+        to eq("/some/path/a-file.rb")
+    end
+
+    it "finds a loaded file with a path and no extension when the loaded file has a .so extension" do
+      expect(the_probe.require_file("../a-file", ["/some/path/wrong-file.rb", "/some/path/a-file.so"])).
+        to eq("/some/path/a-file.so")
+    end
+
+    it "finds a loaded file with a path and an .rb extension when the loaded file has a .rb extension" do
+      expect(the_probe.require_file("../a-file.rb", ["/some/path/wrong-file.rb", "/some/path/a-file.rb"])).
+        to eq("/some/path/a-file.rb")
+    end
+
+    it "finds a loaded file with a path and an .so extension when the loaded file has a .so extension" do
+      expect(the_probe.require_file("../a-file.so", ["/some/path/wrong-file.rb", "/some/path/a-file.so"])).
+        to eq("/some/path/a-file.so")
+    end
+
+    it "finds the last file loaded" do
+      expect(the_probe.require_file("a-file", ["/some/path/a-file.rb", "/some/other/path/a-file.rb"])).
+        to eq("/some/other/path/a-file.rb")
+    end
+  end
+</code></pre><p>And the implementation is:</p><pre><code>  def require_file(file, loaded_features)
+    base_file= Pathname.new(file).basename.to_s
+
+    if base_file =~ /.*(\.rb|\.so)$/
+      match_pattern= /.*\/#{base_file}$/
+    else
+      match_pattern= /.*\/#{base_file}(\.rb|\.so)$/
+    end
+
+    loaded_features.reverse_each do |loaded_file|
+      return loaded_file if loaded_file =~ match_pattern
+    end
+
+    nil
+  end
+</code></pre><p>We first use <code>Pathname#basename</code> strip off any
+directory component of the requested filename, so we're left with just
+the filename. Then, we generate a regex from the filename. If the
+filename already has an extension, then we use a regex which will
+match exactly that filename, with any directory path in front of
+it. If, on the other hand, the requested filename doesn't already have
+an extension, then we use a regex which will match either a .so or a
+.rb file, again, with any directory path in front of it.</p><p>Having set up our regex to match the file we're looking for, we
+then scan through <code>$LOADED_FEATURES</code> for our file.  We
+start at the end of the array and search backward, because entries are
+added at the end, so we'll find the one we want more quickly.</p><p>And that's the hard work for <code>require</code>
+and <code>require_relative</code> sorted out.</p><h3>Finding <code>load</code>'d files</h3><p>Turning to <code>load</code> next, we follow a similar design. This time,
+our new method is <code>load_file(filename, load_path).</code></p><p>Our tests look like:</p><pre><code>  describe "#load_file" do
+    before do
+      FileUtils.mkdir_p "subdir"
+      File.open("subdir/a-file.rb", "w") {|f| f.puts("'junk'")}
+    end
+
+    after do
+      FileUtils.rm_rf "subdir"
+    end
+
+    it "finds the file when the filename is a non-absolute path" do
+      expect(the_probe.load_file("subdir/a-file.rb", [])).
+        to eq("#{Dir.pwd}/subdir/a-file.rb")
+    end
+
+    it "finds the file on the $LOAD_PATH from a non-absolute path" do
+      expect(the_probe.load_file("a-file.rb", ["#{Dir.pwd}/subdir"])).
+        to eq("#{Dir.pwd}/subdir/a-file.rb")
+    end
+
+    it "finds the file from an absolute path" do
+      expect(the_probe.load_file("#{Dir.pwd}/subdir/a-file.rb", [])).
+        to eq("#{Dir.pwd}/subdir/a-file.rb")
+    end
+  end
+</code></pre><p>And the implementation is:</p><pre><code>  def load_file(filename, load_path)
+    loaded_file= File.expand_path(filename)
+
+    if File.exists?(loaded_file)
+      return loaded_file
+    end
+
+    load_path.each do |path|
+      loaded_file= "#{path}/#{filename}"
+      if File.exists?(loaded_file)
+        return loaded_file
+      end
+    end
+
+    nil
+  end
+</code></pre><p>The actual code to generate our output messages is verbose
+enough that it clutters the wrappers and makes them harder to
+follow. So we add two small utility methods which move the details of
+generating our output messages out of the wrapper:</p><pre><code>  def require_message(loaded, file, loaded_features)
+    absolute_file= require_file(file, loaded_features)
+
+    if !loaded
+      "already loaded"
+    elsif absolute_file
+      "loaded #{absolute_file}"
+    else
+      "couldn't find loaded file"
+    end
+  end
+</code></pre><pre><code>  def load_message(filename, load_path)
+    found_file= load_file(filename, load_path)
+    if found_file
+      "loaded #{found_file}"
+    else
+      "couldn't find file"
+    end
+  end
+</code></pre><p>And our <code>install</code> method, with all three wrappers, ends up looking like:</p><pre><code>  def install
+    wrap(Kernel, :require) do |original_require, args|
+      return_value= original_require.call(*args)
+      puts "require(#{args.first}): #{require_message(return_value, args.first, $LOADED_FEATURES)}"
+      return_value
+    end
+
+    wrap(Kernel, :require_relative) do |original_require_relative, args|
+      return_value= require("#{caller_directory}/#{args.first}")
+      puts "require_relative(#{args.first}): #{require_message(return_value, args.first, $LOADED_FEATURES)}"
+      return_value
+    end
+
+    wrap(Kernel, :load) do |original_load, args|
+      return_value= original_load.call(*args)
+      puts "load(#{args.first}): #{load_message(args.first, $LOAD_PATH)}"
+      return_value
+    end
+  end
+</code></pre><h3>Running the app: One More Time</h3><p>So, let's try running our target app again:</p><pre><code class="lang-shell">jmax@deepthought $ bin/ruby-explorer ../bare-rails/
+require(rubygems): already loaded
+require(rubygems): already loaded
+require(rubygems): already loaded
+require(bundler/version): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/version.rb
+require(bundler/compatibility_guard): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/compatibility_guard.rb
+require(etc): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/2.5.0/x86_64-linux/etc.so
+require(bundler/vendor/fileutils/lib/fileutils): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/vendor/fileutils/lib/fileutils.rb
+require(bundler/vendored_fileutils): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/vendored_fileutils.rb
+  :
+  :
+require(bundler/remote_specification): already loaded
+require(bundler/stub_specification): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/stub_specification.rb
+require(bundler/endpoint_specification): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/endpoint_specification.rb
+require(bundler/setup): loaded /home/jmax/.rvm/rubies/ruby-2.5.5/lib/ruby/site_ruby/2.5.0/bundler/setup.rb
+require_relative(bootsnap/version): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/version.rb
+require_relative(bootsnap/bundler): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/bundler.rb
+require_relative(../explicit_require): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/explicit_require.rb
+require_relative(load_path_cache/path_scanner): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/path_scanner.rb
+require_relative(path_scanner): already loaded
+require_relative(load_path_cache/path): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/path.rb
+require_relative(../explicit_require): already loaded
+require_relative(load_path_cache/cache): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/cache.rb
+require_relative(../explicit_require): already loaded
+require_relative(load_path_cache/store): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/store.rb
+require_relative(load_path_cache/change_observer): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/change_observer.rb
+require_relative(load_path_cache/loaded_features_index): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/loaded_features_index.rb
+require_relative(load_path_cache/realpath_cache): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/realpath_cache.rb
+require_relative(bootsnap/load_path_cache): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache.rb
+require_relative(bootsnap/compile_cache): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/compile_cache.rb
+require_relative(../bootsnap): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap.rb
+require_relative(load_path_cache/core_ext/kernel_require): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/bootsnap-1.4.6/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb
+require(/home/jmax/projects/bare-rails/bin/../config/boot): loaded /home/jmax/projects/bare-rails/config/boot.rb
+require_relative(../config/boot): loaded /home/jmax/projects/bare-rails/config/boot.rb
+=&gt; Booting Puma
+=&gt; Rails 6.0.2.2 application starting in development
+=&gt; Run `rails server --help` for more startup options
+load(/home/jmax/projects/bare-rails/config/initializers/application_controller_renderer.rb): loaded /home/jmax/projects/bare-rails/config/initializers/application_controller_renderer.rb
+load(/home/jmax/projects/bare-rails/config/initializers/assets.rb): loaded /home/jmax/projects/bare-rails/config/initializers/assets.rb
+load(/home/jmax/projects/bare-rails/config/initializers/backtrace_silencers.rb): loaded /home/jmax/projects/bare-rails/config/initializers/backtrace_silencers.rb
+load(/home/jmax/projects/bare-rails/config/initializers/content_security_policy.rb): loaded /home/jmax/projects/bare-rails/config/initializers/content_security_policy.rb
+load(/home/jmax/projects/bare-rails/config/initializers/cookies_serializer.rb): loaded /home/jmax/projects/bare-rails/config/initializers/cookies_serializer.rb
+load(/home/jmax/projects/bare-rails/config/initializers/filter_parameter_logging.rb): loaded /home/jmax/projects/bare-rails/config/initializers/filter_parameter_logging.rb
+load(/home/jmax/projects/bare-rails/config/initializers/inflections.rb): loaded /home/jmax/projects/bare-rails/config/initializers/inflections.rb
+load(/home/jmax/projects/bare-rails/config/initializers/mime_types.rb): loaded /home/jmax/projects/bare-rails/config/initializers/mime_types.rb
+load(/home/jmax/projects/bare-rails/config/initializers/wrap_parameters.rb): loaded /home/jmax/projects/bare-rails/config/initializers/wrap_parameters.rb
+load(/home/jmax/projects/bare-rails/config/routes.rb): loaded /home/jmax/projects/bare-rails/config/routes.rb
+load(/home/jmax/.rvm/gems/ruby-2.5.5/gems/actionmailbox-6.0.2.2/config/routes.rb): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/actionmailbox-6.0.2.2/config/routes.rb
+load(/home/jmax/.rvm/gems/ruby-2.5.5/gems/activestorage-6.0.2.2/config/routes.rb): loaded /home/jmax/.rvm/gems/ruby-2.5.5/gems/activestorage-6.0.2.2/config/routes.rb
+Puma starting in single mode...
+* Version 4.3.3 (ruby 2.5.5-p157), codename: Mysterious Traveller
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://127.0.0.1:3000
+* Listening on tcp://[::1]:3000
+Use Ctrl-C to stop
+</code></pre><p>And there we are! A full trace of every file pulled into our
+target Rails app, with full file paths for every file.</p><p>Phew!</p><div id="bottom-navigation"><span class="navigation-prev"><a href="creating_the_probe.html">&lt; Prev</a></span><span class="navigation-up"><a href="toc.html">^ Up</a></span><span class="navigation-next"></span></div></div></body></html>
